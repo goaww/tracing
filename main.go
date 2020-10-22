@@ -13,7 +13,7 @@ func main() {
 	defer closer.Close()
 
 	span := createMainSpan(tracer, "hello-span")
-	defer (*span).Finish()
+	defer span.Finish()
 
 	doStub(span)
 
@@ -26,27 +26,27 @@ func main() {
 	opentracing.SetGlobalTracer(ctxTracer) //important!!!
 
 	ctxSpan := createMainSpan(ctxTracer, "hello-context-span")
-	defer (*ctxSpan).Finish()
+	defer ctxSpan.Finish()
 
-	ctx = opentracing.ContextWithSpan(ctx, *ctxSpan)
+	ctx = opentracing.ContextWithSpan(ctx, ctxSpan)
 
-	doStubWithContext(&ctx)
+	doStubWithContext(ctx)
 
-	logStubWithContext(&ctx)
+	logStubWithContext(ctx)
 }
 
-func createMainSpan(tracer opentracing.Tracer, name string) *opentracing.Span {
+func createMainSpan(tracer opentracing.Tracer, name string) opentracing.Span {
 	span := tracer.StartSpan(name)
 	fmt.Println("Hello!!!")
 	span.SetTag("http.url", "Localhost")
 	span.SetTag("http.method", "GET")
 
 	span.LogKV("event", "main")
-	return &span
+	return span
 }
 
-func doStub(rootSpan *opentracing.Span) {
-	span := (*rootSpan).Tracer().StartSpan("doStub", opentracing.ChildOf((*rootSpan).Context()))
+func doStub(rootSpan opentracing.Span) {
+	span := rootSpan.Tracer().StartSpan("doStub", opentracing.ChildOf(rootSpan.Context()))
 	defer span.Finish()
 	fmt.Println("Do Stub....")
 
@@ -54,8 +54,8 @@ func doStub(rootSpan *opentracing.Span) {
 
 }
 
-func logStub(rootSpan *opentracing.Span) {
-	span := (*rootSpan).Tracer().StartSpan("logStub", opentracing.ChildOf((*rootSpan).Context()))
+func logStub(rootSpan opentracing.Span) {
+	span := rootSpan.Tracer().StartSpan("logStub", opentracing.ChildOf(rootSpan.Context()))
 	defer span.Finish()
 	fmt.Println("Log Stub....")
 
@@ -63,8 +63,8 @@ func logStub(rootSpan *opentracing.Span) {
 
 }
 
-func doStubWithContext(ctx *context.Context) {
-	span, _ := opentracing.StartSpanFromContext(*ctx, "doStubWithContext")
+func doStubWithContext(ctx context.Context) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "doStubWithContext")
 	defer span.Finish()
 	fmt.Println("Do Stub with context....")
 
@@ -72,8 +72,8 @@ func doStubWithContext(ctx *context.Context) {
 
 }
 
-func logStubWithContext(ctx *context.Context) {
-	span, _ := opentracing.StartSpanFromContext(*ctx, "logStubWithContext")
+func logStubWithContext(ctx context.Context) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "logStubWithContext")
 
 	defer span.Finish()
 	fmt.Println("Log Stub with context....")
