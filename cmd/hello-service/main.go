@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
+	"tracing/internal/tracing"
 )
 
 func main() {
 
-	tracer, closer := InitTracer("tracing-service")
+	tracer, closer := tracing.InitTracer("tracing-service")
 	defer closer.Close()
 
 	span := createMainSpan(tracer, "hello-span")
@@ -21,7 +22,7 @@ func main() {
 
 	// Play with context
 	ctx := context.Background()
-	ctxTracer, ctxCloser := InitTracer("context-service")
+	ctxTracer, ctxCloser := tracing.InitTracer("context-service")
 	defer ctxCloser.Close()
 	opentracing.SetGlobalTracer(ctxTracer) //important!!!
 
